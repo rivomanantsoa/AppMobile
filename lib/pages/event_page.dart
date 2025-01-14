@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
- 
+import 'package:forgod/variable_global/globale_state.dart';
+import 'package:provider/provider.dart';
+
 class EventPage extends StatefulWidget {
   const EventPage({super.key});
 
@@ -62,13 +64,17 @@ class _EventPageState extends State<EventPage> {
 
   @override
   Widget build(BuildContext context) {
+    final globalState = Provider.of<GlobalState>(context);
     return  Center(
       child: ListView.builder(
-        itemCount: events.length,
+        itemCount: globalState.personnes.length,
         itemBuilder: (context, index){
           final event = events[index];
           final avatar = event['avatar'];
-          final nom = event['nom'];
+         // final nom = event['nom'];*/
+          final tab = globalState.personnes[index];
+          final name = tab["nom"];
+
 
           return  Card(
             child: ListTile(
@@ -80,7 +86,7 @@ class _EventPageState extends State<EventPage> {
                   fit: BoxFit.cover, // Pour s'assurer que l'image remplit le cercle
                 ),
               ),
-              title: Text("$nom"),
+              title: Text("$name"),
               trailing: Icon(Icons.more_vert),
             ),
           );

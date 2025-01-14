@@ -1,24 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:forgod/pages/add_money.dart';
 import 'package:forgod/pages/event_page.dart';
 import 'package:forgod/pages/home_page.dart';
 import 'package:forgod/pages/add_person.dart';
 import 'package:forgod/pages/show_popup.dart'; // Import du fichier popup.dart
+import 'package:forgod/variable_global/globale_state.dart';
+import 'package:provider/provider.dart';
 
 void main() {
-  runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: MyApp(),
-  ));
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => GlobalState(),
+      child: const MyApp(),
+    ),
+  );
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'For God',
+      theme: ThemeData(primarySwatch: Colors.purple),
+
+      // Configuration des localisations
+      localizationsDelegates: [
+        GlobalMaterialLocalizations.delegate,  // Gère la localisation du matériel Flutter
+        GlobalWidgetsLocalizations.delegate,   // Gère les widgets Flutter
+      ],
+
+      // Langues supportées
+      supportedLocales: [
+        const Locale('en', ''),  // Anglais
+        const Locale('fr', ''),  // Français
+      ],
+
+      home: const MyHomePage(),
+    );
+  }
 }
 
-class _MyAppState extends State<MyApp> {
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key});
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
 
   void setCurrentIndex(int index) {
@@ -33,20 +65,16 @@ class _MyAppState extends State<MyApp> {
       appBar: AppBar(
         backgroundColor: Colors.purple,
         title: [
-
-            Center(
-              child: Text(
-                    "Home",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
+          Center(
+            child: Text(
+              "Home",
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
-
-
-
-           Center(
+          ),
+          Center(
             child: const Text(
               "Add-Money",
               style: TextStyle(
@@ -76,7 +104,7 @@ class _MyAppState extends State<MyApp> {
         ][_currentIndex],
       ),
       body: [
-         HomePage(initialCaisse: 2000),
+        HomePage(initialCaisse: 2000),
         const Center(child: Text("Cliquez sur 'Add' pour ouvrir le popup.")),
         const EventPage(),
         const AddPerson(),
@@ -85,7 +113,7 @@ class _MyAppState extends State<MyApp> {
         currentIndex: _currentIndex,
         onTap: (index) {
           if (index == 1) {
-            showPopup(context); // Utilisation de la fonction depuis popup.dart
+            _openAddMoneyDialog(context); // Utilisation de la fonction depuis popup.dart
           } else {
             setCurrentIndex(index);
           }
@@ -115,6 +143,25 @@ class _MyAppState extends State<MyApp> {
       ),
     );
   }
+}
+
+void _openAddMoneyDialog(BuildContext context) {
+  final globalState = Provider.of<GlobalState>(context, listen: false);
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AddMoney(
+        caisse: Provider.of<GlobalState>(context, listen: false).caisse,
+        onCaisseUpdated: (newCaisse) {
+          globalState.updateCaisse(newCaisse);
+          // Met à jour la caisse ici si nécessaire
+        },
+        onTransactionAdded: (transaction) {
+          // Gère la transaction ajoutée ici
+        },
+      );
+    },
+  );
 }
 
 
@@ -222,6 +269,37 @@ class Test extends StatelessWidget {
     return Text(
       '$nom, La caisse principale est de : $compte Ar',
       style: const TextStyle(fontSize: 24),
+    );
+  }
+}
+*/
+
+
+/*import 'package:flutter/material.dart';
+import 'package:forgod/leson/my_home_page.dart';
+import 'package:provider/provider.dart';
+import 'package:forgod/leson/global_state.dart'; // Chemin vers ta classe GlobalState
+
+void main() {
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => GlobalState()), // Fournit l'état global
+      ],
+      child: const MyApp(),
+    ),
+  );
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: MyHomePage(),
+
     );
   }
 }

@@ -1,5 +1,7 @@
 import 'package:date_field/date_field.dart';
 import 'package:flutter/material.dart';
+import 'package:forgod/variable_global/globale_state.dart';
+import 'package:provider/provider.dart';
 
 class AddPerson extends StatefulWidget {
   const AddPerson({super.key});
@@ -10,7 +12,6 @@ class AddPerson extends StatefulWidget {
 
 class _AddPersonState extends State<AddPerson> {
   final _formkey = GlobalKey<FormState>();
-
   final nameNameController = TextEditingController();
   final numberNameController = TextEditingController();
   String selectedGenre = "male";
@@ -18,24 +19,63 @@ class _AddPersonState extends State<AddPerson> {
 
   @override
   void dispose() {
-    super.dispose();
     nameNameController.dispose();
     numberNameController.dispose();
+    super.dispose();
+  }
+
+  void _submit(GlobalState globalState) {
+    if (_formkey.currentState!.validate()) {
+      globalState.addPerson(
+        nom: nameNameController.text,
+        genre: selectedGenre,
+        date: selectedDate,
+        number: numberNameController.text,
+      );
+
+      // Réinitialiser les champs
+      nameNameController.clear();
+      numberNameController.clear();
+      setState(() {
+        selectedGenre = "male";
+        selectedDate = DateTime.now();
+      });
+
+      // Afficher un dialogue de confirmation
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: const Text("Confirmation"),
+            content: const Text("Person added successfully!"),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.pop(context); // Fermer le dialogue
+                },
+                child: const Text("OK"),
+              ),
+            ],
+          );
+        },
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
+    final globalState = Provider.of<GlobalState>(context);
     return Container(
-      margin: EdgeInsets.all(10),
+      margin: const EdgeInsets.all(10),
       child: SingleChildScrollView(
         child: Form(
           key: _formkey,
           child: Column(
             children: [
               Container(
-                margin: EdgeInsets.only(bottom: 20),
+                margin: const EdgeInsets.only(bottom: 20),
                 child: TextFormField(
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: "Name of the person",
                     hintText: "Please enter the name",
                     border: OutlineInputBorder(),
@@ -50,9 +90,9 @@ class _AddPersonState extends State<AddPerson> {
                 ),
               ),
               Container(
-                margin: EdgeInsets.only(bottom: 20),
+                margin: const EdgeInsets.only(bottom: 20),
                 child: TextFormField(
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: "Phone number",
                     hintText: "Please enter the phone number",
                     border: OutlineInputBorder(),
@@ -67,13 +107,13 @@ class _AddPersonState extends State<AddPerson> {
                 ),
               ),
               Container(
-                margin: EdgeInsets.only(bottom: 20),
+                margin: const EdgeInsets.only(bottom: 20),
                 child: DropdownButtonFormField(
                   items: const [
                     DropdownMenuItem(value: 'male', child: Text("Male")),
                     DropdownMenuItem(value: 'female', child: Text("Female")),
                   ],
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                   ),
                   value: selectedGenre,
@@ -87,6 +127,7 @@ class _AddPersonState extends State<AddPerson> {
               DateTimeFormField(
                 decoration: const InputDecoration(
                   labelText: 'Enter Date',
+                  border: OutlineInputBorder(),
                 ),
                 firstDate: DateTime.now().add(const Duration(days: 10)),
                 lastDate: DateTime.now().add(const Duration(days: 40)),
@@ -102,22 +143,11 @@ class _AddPersonState extends State<AddPerson> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: () {
-                    if (_formkey.currentState!.validate()) {
-                      final nameName = nameNameController.text;
-                      final numberName = numberNameController.text;
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Saving in process...")),
-                      );
-                      FocusScope.of(context).requestFocus(FocusNode());
-                      print(
-                          "Bonjour:  $nameName votre numéro de téléphone est : $numberName vous êtes du genre: $selectedGenre");
-                      print("Vous êtes né(e) le $selectedDate");
-                    }
+                    _submit(globalState);
                   },
-                  child: Text("Save"),
+                  child: const Text("Save"),
                 ),
-              )
+              ),
             ],
           ),
         ),
